@@ -1,5 +1,5 @@
 code for qinghai load forecasting
-### 环境
+### 环境配置
 python=3.10
 torch==2.3.1
 torchvision==0.18.1
