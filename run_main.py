@@ -15,6 +15,7 @@ import random
 import numpy as np
 import os
 import pickle
+from utils.painting import draw_comparision
 
 os.environ['CURL_CA_BUNDLE'] = ''
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:64"
@@ -342,7 +343,7 @@ for ii in range(args.itr):
     #         pickle.dump(testation_data, open(path + '/plot_data.pkl', 'wb'))
     #     else: 
     #         pickle.dump(testation_data, open(path +'/evaluation_data.pkl', 'wb'))
-    print(checkpoint_path + '/test_data.pkl')
+    draw_comparision(checkpoint_path + '/test_data.pkl',ii)
 
     print ("min_mse: ",min_mse,", min_mae: ",min_mae," max_r2: ",max_r2)
 # accelerator.wait_for_everyone()
