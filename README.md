@@ -1,6 +1,9 @@
 code for qinghai load forecasting
 ### 环境配置
-python=3.10
+python=3.9.14
+wheel==0.38.4
+setuptools==65.5.1
+pip==23.3.1
 torch==2.3.1
 torchvision==0.18.1
 torchaudio==2.3.1
