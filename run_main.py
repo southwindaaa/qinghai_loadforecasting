@@ -15,12 +15,12 @@ import random
 import numpy as np
 import os
 import pickle
-from utils.painting import draw_comparision
+from utils.painting import draw_comparision,draw_prdict_comparision_no_other
 
 os.environ['CURL_CA_BUNDLE'] = ''
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:64"
 
-from utils.tools import del_files, EarlyStopping, adjust_learning_rate, vali, load_content, vali_evaluation
+from utils.tools import del_files, EarlyStopping, adjust_learning_rate, vali, load_content, vali_evaluation,predict
 
 parser = argparse.ArgumentParser(description='Qinghai')
 
@@ -98,14 +98,15 @@ parser.add_argument('--content', type=str, default="")
 parser.add_argument('--other_id', type=str, default=None)
 parser.add_argument('--train_date', type=str, default='20220120')
 
+# predict
+parser.add_argument('--predict_start_date', type=str, default='20220120')
+parser.add_argument('--predict_model_path', type=str, default=None)
+parser.add_argument('--predict_batch_size', type=int, default=1)
+
+
 args = parser.parse_args()
 if args.is_training == 0 and args.checkpoint <= 0:
     raise ValueError("When --is_training is 0, --checkpoint must be greater than 0.")
-
-
-# ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-#deepspeed_plugin = DeepSpeedPlugin(hf_ds_config='./ds_config_zero2.json')
-# accelerator = Accelerator(kwargs_handlers=[ddp_kwargs])#, deepspeed_plugin=deepspeed_plugin)
 
 for ii in range(args.itr):
     # setting record of experiments
@@ -114,7 +115,9 @@ for ii in range(args.itr):
 
     train_data, train_loader = data_provider(args, 'train')
     vali_data, vali_loader = data_provider(args, 'val')
-    # test_data, test_loader = data_provider(args, 'test')
+    predict_data,predict_loader = data_provider(args,'predict')
+        
+
     device = torch.device('cuda:0')
     
     if args.model == 'DLinear':
@@ -318,34 +321,23 @@ for ii in range(args.itr):
 
             else:
                 print('Updating learning rate to {}'.format(scheduler.get_last_lr()[0]))
-    # else:
-    #     print("direct to test")
-    #     model.load_state_dict(torch.load(path + f'/checkpoint-{args.checkpoint}/model_weights.pth'),strict=False)
-    #     model.eval()
-    #     if args.zeroshot:
-    #         testation_data = vali_social_evaluation(args, accelerator, model, zeroshot_data, zeroshot_loader, criterion, mae_metric)
-    #     elif args.plot:
-    #         testation_data = vali_social_evaluation(args, accelerator, model, plot_data, plot_loader, criterion, mae_metric)
-    #     else:
-    #         testation_data = vali_social_evaluation(args, accelerator, model, test_data, test_loader, criterion, mae_metric)
-    #     test_loss = testation_data['total_loss']
-    #     test_mae_loss = testation_data['total_mae_loss']
-    #     test_r2 = testation_data['total_r2']
-    #     if test_loss < min_mse:
-    #         min_mse = test_loss
-    #     if test_mae_loss < min_mae:
-    #         min_mae = test_mae_loss
-    #     if test_r2 > max_r2:
-    #         max_r2 = test_r2
-    #     if args.eval_no_social:
-    #         pickle.dump(testation_data, open(path + '/evaluation_data_no_social.pkl', 'wb'))
-    #     elif args.plot:
-    #         pickle.dump(testation_data, open(path + '/plot_data.pkl', 'wb'))
-    #     else: 
-    #         pickle.dump(testation_data, open(path +'/evaluation_data.pkl', 'wb'))
-    draw_comparision(checkpoint_path + '/test_data.pkl',ii)
+        
+        draw_comparision(checkpoint_path + '/test_data.pkl',ii)
 
-    print ("min_mse: ",min_mse,", min_mae: ",min_mae," max_r2: ",max_r2)
+        print ("min_mse: ",min_mse,", min_mae: ",min_mae," max_r2: ",max_r2)
+    else:
+        if args.predict_model_path:
+            model.load_state_dict(torch.load(args.predict_model_path))
+        else:
+            model.load_state_dict(torch.load(path + f'/checkpoint-{args.checkpoint}/model_weights.pth'),strict=False)
+        predictdata = predict(args, device, model, predict_data,predict_loader, criterion, mae_metric)
+        pickle.dump(predictdata, open('./predict_data/'+setting + '_predictdata.pkl', 'wb'))
+        draw_prdict_comparision_no_other('./predict_data/'+setting + '_predictdata.pkl',ii)
+
+        
+
+
+    
 # accelerator.wait_for_everyone()
 # if accelerator.is_local_main_process:
 #     path = './checkpoints'  # unique checkpoint saving path

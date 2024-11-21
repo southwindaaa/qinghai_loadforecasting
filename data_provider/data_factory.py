@@ -1,23 +1,29 @@
 from data_provider.data_loader import QinghaiLoadData
+from data_provider.data_loader_2 import PredictData
 from torch.utils.data import DataLoader
 
 data_dict = {
     'qinghaidata':QinghaiLoadData,
+    'predictdata':PredictData
 }
 
 
 def data_provider(args, flag):
-    Data = data_dict[args.data]
+    print(flag)
+    if flag == 'predict':
+        Data = data_dict['predictdata']
+        batch_size = args.predict_batch_size
+    else:
+        Data = data_dict[args.data]
+        batch_size = args.batch_size
 
-    if flag in ['test','zeroshot']:
+    if flag in ['test','zeroshot','predict']:
         shuffle_flag = False
         drop_last = True
-        batch_size = args.batch_size
         freq = args.freq
     else:
         shuffle_flag = True
         drop_last = True
-        batch_size = args.batch_size
         freq = args.freq
 
     
