@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np  
 from .metrics import metric
 import pickle
-import pandas as pd
 
 def draw_comparision(data_path,ii):
     # print(data_path.split('/'))
@@ -37,81 +36,5 @@ def draw_comparision(data_path,ii):
     # 保存图像
     print(result_folder+data_path.split('/')[2]+'_'+str(ii)+'.jpg')
     plt.savefig(result_folder+data_path.split('/')[2]+'_'+str(ii)+'.jpg')
-
-    return mae_sample,mse_sample,mape_sample
-
-def draw_prdict_comparision_with_other(data_path,ii):
-    # print(data_path.split('/'))
-    with open(data_path, 'rb') as file:
-        data = pickle.load(file)
-    print(data['data_x'].shape,data['data_y'].shape,data['pred_y'].shape)
-    if isinstance(data, dict):
-        data = pd.DataFrame(data)
-
-    for (net_id, other_id), group in data.groupby(['net_id', 'other_id']):
-    
-        true_sample = group['data_y']
-        pred_sample = group['pred_y']
-        # print(true_sample)
-        # print(pred_sample)
-
-        mae_sample, mse_sample, rmse_sample, mape_sample, mspe_sample = metric(pred_sample, true_sample)
-
-        # 创建一个绘图
-        plt.figure(figsize=(12, 6))
-
-
-        # 绘制 preds 和 trues 的曲线
-        plt.plot(pred_sample, label='Predictions', alpha=0.7)
-        plt.plot(true_sample, label='True Values', alpha=0.7)
-        # print('Predictions vs True Values feature: '+ str(feat_ids[random_index,0]))
-        plt.title('net_id:{}\tother_id:{}'.format(net_id,other_id))
-        plt.xlabel('time_steps')
-        plt.ylabel('Values')
-        plt.legend(title=f'MAE: {mae_sample:.4f}\nMSE: {mse_sample:.4f}\nMAPE: {mape_sample:.4f}')
-
-        result_folder = './results/predict_images/9net/'
-        if not os.path.exists(result_folder):        
-            os.makedirs(result_folder)
-        # 保存图像
-        print(result_folder+data_path.split('/')[2]+'_'+str(net_id)+'_'+str(other_id)+'_'+str(ii)+'.jpg')
-        plt.savefig(result_folder+data_path.split('/')[2]+'_'+str(net_id)+'_'+str(other_id)+'_'+str(ii)+'.jpg')
-
-    return mae_sample,mse_sample,mape_sample
-
-def draw_prdict_comparision_no_other(data_path,ii):
-    # print(data_path.split('/'))
-    with open(data_path, 'rb') as file:
-        data = pickle.load(file)
-    print(data['data_x'].shape,data['data_y'].shape,data['pred_y'].shape)
-
-    for i, net_id in enumerate(data['net_ids']):
-    
-        true_sample = data['data_y'][i,:,:]
-        pred_sample = data['pred_y'][i,:,:]
-        # print(true_sample)
-        # print(pred_sample)
-
-        mae_sample, mse_sample, rmse_sample, mape_sample, mspe_sample = metric(pred_sample, true_sample)
-
-        # 创建一个绘图
-        plt.figure(figsize=(12, 6))
-
-
-        # 绘制 preds 和 trues 的曲线
-        plt.plot(pred_sample, label='Predictions', alpha=0.7)
-        plt.plot(true_sample, label='True Values', alpha=0.7)
-        # print('Predictions vs True Values feature: '+ str(feat_ids[random_index,0]))
-        plt.title('net_id:{}'.format(net_id))
-        plt.xlabel('time_steps')
-        plt.ylabel('Values')
-        plt.legend(title=f'MAE: {mae_sample:.4f}\nMSE: {mse_sample:.4f}\nMAPE: {mape_sample:.4f}')
-
-        result_folder = './results/predict_images/9net/'
-        if not os.path.exists(result_folder):        
-            os.makedirs(result_folder)
-        # 保存图像
-        print(result_folder+data_path.split('/')[2]+'_'+str(net_id)+'_'+str(ii)+'.jpg')
-        plt.savefig(result_folder+data_path.split('/')[2]+'_'+str(net_id)+'_'+str(ii)+'.jpg')
 
     return mae_sample,mse_sample,mape_sample

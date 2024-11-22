@@ -59,10 +59,8 @@ class QinghaiLoadData(Dataset):
         df['ymd'] = pd.to_datetime(df['ymd'], format='%Y%m%d')
         if self.flag == 0: #训练集
             df = df[df['ymd']<=pd.to_datetime(self.train_date, format='%Y%m%d')]
-        elif self.flag == 1: #验证集
+        else: #验证集
             df = df[df['ymd']>pd.to_datetime(self.train_date, format='%Y%m%d')]
-        else:
-            df = df[df['ymd']>pd.to_datetime(self.predict_start_date, format='%Y%m%d')]
         print ('after_seperate_df.shape',df.shape)
         
         self.scale_label_encoder_netid = LabelEncoder()
@@ -208,4 +206,3 @@ class QinghaiLoadData(Dataset):
         
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
-    
