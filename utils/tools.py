@@ -187,6 +187,7 @@ def vali(args, device, model, vali_data, vali_loader, criterion, mae_metric):
     model.train()
     return total_loss, total_mae_loss
 
+
 def test(args, device, model, train_loader, vali_loader, criterion):
     x, _ = train_loader.dataset.last_insample_window()
     y = vali_loader.dataset.timeseries
@@ -308,72 +309,3 @@ def vali_evaluation(args, device, model, vali_data, vali_loader, criterion, mae_
     validation_data['total_mae_loss'] = total_mae_loss
     validation_data['total_r2'] = r2
     return validation_data
-
-def predict(args, device, model, predict_data, predict_loader, criterion, mae_metric):
-    print(len(predict_loader))
-    model.eval()
-    model.to(device)
-    data_x = []
-    data_y = []
-    pred_y = []
-    net_ids = []
-    other_ids = []
-
-    with torch.no_grad():
-        for i, batch in tqdm(enumerate(predict_loader)):
-            batch_x = batch[0].float().to(device)
-            batch_y = batch[1].float().to(device)
-            batch_x_mark = batch[2].float().to(device)
-            batch_y_mark = batch[3].float().to(device)
-            net_id = batch[4].float().to(device)
-            if args.other_id == 1:
-                other_id = batch[5].float().to(device)
-            else:
-                other_id = None
-            
-            print(batch_x.shape,batch_y.shape,net_id)
-
-            # decoder input
-            dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
-                    device)
-                # print ('dec_inp',dec_inp)
-            dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
-                device)
-            # encoder - decoder
-
-            batch_x_mark = None
-            batch_y_mark = None
-            if args.use_amp:
-                with torch.cuda.amp.autocast():
-                    outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-            else:
-                outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-            # outputs, batch_y = accelerator.gather_for_metrics((outputs, batch_y))
-
-            outputs = outputs[:, -args.pred_len:, :]
-            batch_y = batch_y[:, -args.pred_len:, :].to(device)
-
-            pred = outputs.detach()
-            true = batch_y.detach()
-            print(pred.shape)
-
-            data_x.append(batch_x.detach().cpu().numpy())
-            data_y.append(true.detach().cpu().numpy())
-            pred_y.append(pred.detach().cpu().numpy())
-            net_ids.append(net_id.detach().cpu().numpy())
-            if args.other_id == 1:
-                other_ids.append(other_id.detach().cpu().numpy())
-
-    data_x = np.concatenate(data_x, axis=0)
-    data_y = np.concatenate(data_y, axis=0)
-    pred_y = np.concatenate(pred_y, axis=0)
-    r2 = r2_score(data_y.reshape(-1,1),pred_y.reshape(-1,1))
-
-    predict_data = {}
-    predict_data['data_x'] = data_x
-    predict_data['data_y'] = data_y
-    predict_data['pred_y'] = pred_y
-    predict_data['net_ids'] = net_ids
-    if args.other_id == 1:
-        predict_data['other_ids'] = other_ids
-    return predict_data
