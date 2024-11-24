@@ -30,20 +30,20 @@ torch.manual_seed(fix_seed)
 np.random.seed(fix_seed)
 
 # basic config
-parser.add_argument('--task_name', type=str, required=True, default='long_term_forecast',
+parser.add_argument('--task_name', type=str, default='long_term_forecast',
                     help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
-parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
+parser.add_argument('--is_training', type=int, default=1, help='status')
 parser.add_argument('--checkpoint', type=int, default=0, help='checkpoint')
-parser.add_argument('--model_id', type=str, required=True, default='qinghai', help='model id')
-parser.add_argument('--model_comment', type=str, required=True, default='none', help='prefix when saving test results')
-parser.add_argument('--model', type=str, required=True, default='DLinear',
+parser.add_argument('--model_id', type=str, default='qinghai', help='model id')
+parser.add_argument('--model_comment', type=str, default='none', help='prefix when saving test results')
+parser.add_argument('--model', type=str, default='DLinear',
                     help='model name, options: [Autoformer, DLinear]')
 parser.add_argument('--seed', type=int, default=2021, help='random seed')
 
 # data loader
-parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
+parser.add_argument('--data', type=str, default='qinghaidata', help='dataset type')
 parser.add_argument('--root_path', type=str, default='./data/', help='root path')
-parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
+parser.add_argument('--data_path', type=str, default='load_data.csv', help='data file')
 parser.add_argument('--freq', type=str, default='h',
                     help='freq for time features encoding, '
                          'options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], '
@@ -51,8 +51,8 @@ parser.add_argument('--freq', type=str, default='h',
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
 # forecasting task
-parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
-parser.add_argument('--label_len', type=int, default=48, help='start token length')
+parser.add_argument('--seq_len', type=int, default=336, help='input sequence length')
+parser.add_argument('--label_len', type=int, default=336, help='start token length')
 parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
 parser.add_argument('--scale', type=int, default=0, help='whether to scale data')
 

@@ -1,4 +1,6 @@
-import os  
+import os
+
+import joblib
 import matplotlib.pyplot as plt  
 import numpy as np  
 from .metrics import metric
@@ -10,8 +12,15 @@ def draw_comparision(data_path,ii):
         data = pickle.load(file)
     print(data['data_x'].shape,data['data_y'].shape,data['pred_y'].shape)
     
-    true_sample = data['data_y'][-1]
-    pred_sample = data['pred_y'][-1]
+    true_sample = data['data_y']
+    pred_sample = data['pred_y']
+    # 从文件加载 scaler
+    # scaler = joblib.load('../scaler.pkl')
+    # # 使用加载的 scaler
+    # data_scaled = true_sample * scaler.scale_ + scaler.mean_
+    # pred_scaled = pred_sample * scaler.scale_ + scaler.mean_
+    # print("标准化后的数据：", data_scaled)
+
     # print(true_sample)
     # print(pred_sample)
 
@@ -38,3 +47,7 @@ def draw_comparision(data_path,ii):
     plt.savefig(result_folder+data_path.split('/')[2]+'_'+str(ii)+'.jpg')
 
     return mae_sample,mse_sample,mape_sample
+
+if __name__ == '__main__':
+    data_path = '../checkpoints/long_term_forecast_DLinear_qinghaidata_test_GPT2_d_ff_32-TimeLLM-SocalSmart/checkpoint-11/test_data.pkl'
+    draw_comparision(data_path,20)
