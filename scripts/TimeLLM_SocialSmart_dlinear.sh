@@ -13,8 +13,8 @@ comment='96points'
 python run_main.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./data/ \
-  --data_path  load_data.csv \
+  --root_path ./data/test/ \
+  --data_path  96load.csv \
   --model_id Qinghai \
   --model $model_name \
   --data qinghaidata \
@@ -32,5 +32,5 @@ python run_main.py \
   --learning_rate $learning_rate \
   --train_epochs $train_epochs \
   --model_comment $comment \
-  --train_date 20240120
+  --train_date 20231201
 
