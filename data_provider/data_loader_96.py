@@ -66,6 +66,7 @@ class MydataLoader(Dataset):
             df = df.sort_values(by=['net_id', 'ymd'])
             df = self._handle_missing_dates_no_otherid(df)
 
+
         # 数据项进行标准化
         data = df.filter(regex=pattern)  # 提取数据项
         attr = df[df.columns[~df.columns.str.match(pattern)]]  # 提取属性项

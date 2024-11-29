@@ -1,0 +1,77 @@
+# 国网负荷预测项目配置文件
+name: 'qinghai_load_forecasting_project' # 项目名称
+sub_name: &comment "week" # 模型描述
+version: '1.0.0' # 项目版本
+description: '青海省国网负荷预测项目' # 项目描述
+group: 'b318' # 项目组
+checkpoints_path: &save_path "checkpoints" # 保存路径
+data_dir: &data_dir "data" # 数据目录路径
+weight_path: &weight_path "model_weights.pth" #权重文件名称
+scaler_path: &scaler_path "scaler.pkl" #归一化文件名称
+train:
+  task_name: "long_term_forecast" # 任务名称,请谨慎修改，可能导致模型没输出，别问我怎么知道的
+  data_path: "data.csv" # 数据集路径
+  scaler_name: *scaler_path # 归一化文件路径
+  is_training: 1 # 是否训练
+  checkpoint: 0 # 是否加载模型
+  model_id: "96points" # 模型ID
+  model_comment: *comment # 模型描述
+  save_fill_data: true # 是否保存填充数据
+  model: "DLinear" # 要加载的模型
+  seed: 2021 # 随机种子
+  split_rate: 0.8 # 划分比例
+  data: "qinghaidata" # 数据集
+  root_path: *data_dir # 数据集根目录
+  freq: "h" # 数据集频率
+  checkpoints: *save_path # 检查点路径
+  seq_len: 28 # 序列长度
+  label_len: 28 # 标签长度
+  pred_len: 7 # 预测长度
+  scale: 1 # 数据集缩放
+  enc_in: 1 # 编码器输入
+  dec_in: 1 # 解码器输入
+  c_out: 1 # 输出
+  d_model: 16 # 模型维度
+  n_heads: 8 # 多头注意力头数
+  e_layers: 2 # 编码器层数
+  d_layers: 1 # 解码器层数
+  d_ff: 32 # 前馈网络维度
+  moving_avg: 25 # 移动平均
+  factor: 3 # 因子
+  dropout: 0.1 # dropout
+  embed: "timeF" # 嵌入
+  activation: "gelu" # 激活函数
+  patch_len: 16 # 补丁长度
+  stride: 8 # 步长
+  prompt_domain: 1 # 提示域
+  llm_model: "GPT2" # 语言模型
+  llm_dim: 768 # 语言模型维度
+  num_workers: 10 # 工作线程数
+  itr: 1 # 迭代次数
+  train_epochs: 51 # 训练轮数
+  align_epochs: 10 # 对齐轮数
+  batch_size: 32 # 批大小
+  eval_batch_size: 8 # 评估批大小
+  patience: 4 # 容忍度
+  learning_rate: 0.01 # 学习率
+  des: "test" # 描述
+  loss: "MSE" # 损失函数
+  lradj: "type1" # 学习率调整
+  pct_start: 0.2 # pct_star
+  use_amp: false # 是否使用amp
+  llm_layers: 6 # 语言模型层数
+  percent: 100 # 百分比
+  content: "" # 内容
+  other_id: None # 其他ID
+  train_date: "20240120" # 训练日期
+infer:
+  model_path: *save_path #权重文件路径
+  weight_name: *weight_path #权重文件名称
+  scaler_name: *scaler_path  #归一化文件名称
+  comment: *comment #描述
+  data_path: *data_dir # 数据目录路径
+  data_name: "validation.csv" # 数据集路径
+  visual_path: &visual_path "./result/" #可视化文件路径
+log:
+  save_path: *save_path #日志文件路径
+  log_name: "log.log" #日志文件名称
