@@ -9,3 +9,4 @@ load_forecast_week/result/
 data/
 .vscode/
 .idea/
+.gitignore
