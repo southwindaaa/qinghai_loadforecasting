@@ -1,4 +1,4 @@
-import os  
+import os
 import matplotlib.pyplot as plt  
 import numpy as np  
 from .metrics import metric
@@ -38,3 +38,7 @@ def draw_comparision(data_path,ii):
     plt.savefig(result_folder+data_path.split('/')[2]+'_'+str(ii)+'.jpg')
 
     return mae_sample,mse_sample,mape_sample
+
+if __name__ == '__main__':
+    data_path = '../checkpoints/long_term_forecast_DLinear_qinghaidata_test_GPT2_d_ff_32-TimeLLM-SocalSmart/checkpoint-11/test_data.pkl'
+    draw_comparision(data_path,20)

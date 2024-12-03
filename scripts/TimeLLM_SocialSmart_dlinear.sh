@@ -8,7 +8,7 @@ batch_size=32
 d_model=32
 d_ff=32
 
-comment='TimeLLM-SocalSmart'
+comment='96points'
 
 python run_main.py \
   --task_name long_term_forecast \
@@ -20,15 +20,17 @@ python run_main.py \
   --data qinghaidata \
   --seq_len 336 \
   --label_len 336 \
-  --pred_len 76 \
+  --pred_len 96 \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
   --c_out 1 \
+  --scale 1\
   --batch_size $batch_size \
   --learning_rate $learning_rate \
   --train_epochs $train_epochs \
   --model_comment $comment \
   --train_date 20240120
+

@@ -7,7 +7,7 @@ net_ids = [f"net_{i}" for i in range(1, 4)]
 other_ids = [f"other_{i}" for i in range(1, 4)]
 
 # 生成日期范围
-start_date = datetime(2024, 1, 1)
+start_date = datetime(2020, 1, 1)
 end_date = datetime(2024, 1, 30)
 date_list = pd.date_range(start_date, end_date).strftime('%Y%m%d').tolist()
 
@@ -27,6 +27,6 @@ for date in date_list:
 df = pd.DataFrame(data, columns=["net_id", "other_id", "ymd", *range(1, 97)])
 
 # 保存为CSV文件
-df.to_csv("load_data.csv", index=False)
+df.to_csv("test_data.csv", index=False)
 
 print("CSV文件已生成：load_data.csv")
