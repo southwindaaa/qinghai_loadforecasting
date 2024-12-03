@@ -14,7 +14,13 @@ import pickle
 import random
 import torch
 from torch.utils.data import Dataset
+import logging
 
+# 配置日志格式
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 warnings.filterwarnings('ignore')
 
 
@@ -224,3 +230,108 @@ class QinghaiLoadData(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+    
+    
+
+
+# 数据预处理和 CSV 读取的 class
+class QinghaiGenerationData(Dataset):
+    def __init__(self, flag='train', root_path=None,
+                 size=None, data_path=None,
+                 other_id=None,
+                 scale=True, args=None):
+        # 序列长度
+        self.seq_len = 672 if size is None else size[0]
+        # 预测长度
+        self.pred_len = 336 if size is None else size[2]
+        # 是否标准化
+        self.scale = scale
+        # 当前任务生成训练集还是验证集，True 为训练集，False 为验证集
+        self.isTrain = True if flag == 'train' else False
+        # 训练集和测试集划分比例
+        self.split_rate = 0.8
+
+        # 读取 CSV 文件
+        logging.info(f'设定初始化完成，开始读取数据{os.path.join(root_path, data_path)}')
+        data = pd.read_csv(os.path.join(root_path, data_path))
+        data['time'] = pd.to_datetime(data['time'])
+        generation_col = '实测辐照度(W/m²)' if args.generation_type == 'solar_power' else '实测风速(m/s)'
+        power_col = '出线柜功率(MW)'
+        
+        if generation_col not in data.columns:
+            raise ValueError(f'数据集中没有{generation_col}, 列名有{data.columns}')
+        
+        if power_col not in data.columns:
+            raise ValueError(f'数据集中没有{power_col}, 列名有{data.columns}')
+        
+        
+        logging.info(f'数据读取完成，数据维度为{data.shape}')
+        
+        self.use_cols = ['prs','t','difssi','ssi','ws','dirssi','rhu']
+        self.label_col = power_col
+        
+        logging.info(f'开始标准化')
+        if scale:
+            scaler_dict = {}
+            for i in self.use_cols+[power_col]:
+                scaler = StandardScaler()
+                scaler.fit(data[i].values.reshape(-1, 1))
+                data[i] = scaler.transform(data[i].values.reshape(-1, 1))
+                scaler_dict[i] = scaler
+            joblib.dump(scaler_dict, f'generation_scaler.pkl')
+            
+        logging.info(f'标准化完成')
+
+        # 训练集测试集划分
+        split_date = data['time'].min() + (data['time'].max() - data['time'].min()) * 0.8
+        logging.info(f"{'训练集' if self.isTrain else '测试集'}划分时间点为：{split_date}")
+        data = data[data['time'] <= split_date] if self.isTrain else data[data['time'] > split_date]
+        logging.info(f"{'训练集' if self.isTrain else '测试集'}划分完成，数据维度为{data.shape}")
+
+        
+        logging.info('数据初始化完成，概要信息为：')
+        print(data.head(10))
+        
+        self.data = self.group_each_data(data)
+        logging.info('数据分区完成')
+        
+        
+
+    def group_each_data(self, df):
+        """
+        将每个场站的数据单独做成一个数据。
+        """
+        data = []
+        for name, group in df.groupby(['场站名称']):
+            group_data = group.drop(columns=['场站名称'])  # 删除不需要的列
+            group_data = group_data.set_index('time')
+
+            data.append((name[0], 
+                         group_data[self.use_cols].values, 
+                         group_data[self.label_col].values))
+        return data
+
+    def __len__(self):
+        # 返回所有场站的总数量 * 1000
+        return len(self.data) * 1000
+
+    def __getitem__(self, idx):
+        name, weather_data, label_data = self.data[idx % len(self.data)]
+        # 随机选择一个起始点
+        max_start_idx = len(weather_data) - self.seq_len - self.pred_len
+        start_idx = random.randint(0, max_start_idx)
+        # 输入序列
+        
+        x1 = label_data[start_idx : start_idx + self.seq_len]
+        x2 = weather_data[start_idx : start_idx + self.seq_len + self.pred_len]
+        # 预测序列
+        y = label_data[start_idx + self.seq_len : start_idx + self.seq_len + self.pred_len]
+        # 转换为 tensor
+        historical_tensor = torch.tensor(x1, dtype=torch.float32).unsqueeze(1)
+        weather_tensor = torch.tensor(x2, dtype=torch.float32)
+        y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
+        return historical_tensor, y_tensor, weather_tensor, y_tensor, name
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
+

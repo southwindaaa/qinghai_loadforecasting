@@ -1,8 +1,9 @@
-from data_provider.data_loader import QinghaiLoadData
+from data_provider.data_loader import QinghaiLoadData,QinghaiGenerationData
 from torch.utils.data import DataLoader
 
 data_dict = {
     'qinghaidata':QinghaiLoadData,
+    'qinghaigenerationdata': QinghaiGenerationData,
 }
 
 
