@@ -24,7 +24,6 @@ class Model(nn.Module):
         self.decompsition = series_decomp(configs.moving_avg)
         self.individual = individual
         self.channels = configs.enc_in
-        self.weather_channels = configs.weather_enc_in
         self.projection_generate = nn.Linear(
                 (self.weather_channels + 1) * self.pred_len, 
                 self.pred_len)

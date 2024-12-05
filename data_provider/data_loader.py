@@ -318,19 +318,17 @@ class QinghaiGenerationData(Dataset):
     def __getitem__(self, idx):
         name, weather_data, label_data = self.data[idx % len(self.data)]
         # 随机选择一个起始点
-        max_start_idx = len(weather_data) - self.seq_len - self.pred_len
+        max_start_idx = len(weather_data) - self.pred_len
         start_idx = random.randint(0, max_start_idx)
         # 输入序列
         
-        x1 = label_data[start_idx : start_idx + self.seq_len]
-        x2 = weather_data[start_idx : start_idx + self.seq_len + self.pred_len]
+        x2 = weather_data[start_idx : start_idx + self.pred_len]
         # 预测序列
-        y = label_data[start_idx + self.seq_len : start_idx + self.seq_len + self.pred_len]
+        y = label_data[start_idx: start_idx + self.pred_len]
         # 转换为 tensor
-        historical_tensor = torch.tensor(x1, dtype=torch.float32).unsqueeze(1)
         weather_tensor = torch.tensor(x2, dtype=torch.float32)
         y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
-        return historical_tensor, y_tensor, weather_tensor, y_tensor, name
+        return weather_tensor, y_tensor, weather_tensor, y_tensor, name
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)

@@ -257,20 +257,20 @@ def vali_evaluation(args, device, model, vali_data, vali_loader, criterion, mae_
                 other_id = None
 
             # decoder input
-            dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
-                    device)
-                # print ('dec_inp',dec_inp)
-            dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
-                device)
+            # dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
+            #         device)
+            #     # print ('dec_inp',dec_inp)
+            # dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
+            #     device)
             # encoder - decoder
 
             #batch_x_mark = None
             batch_y_mark = None
             if args.use_amp:
                 with torch.cuda.amp.autocast():
-                    outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                    outputs = model(batch_x, batch_x_mark, None, batch_y_mark)
             else:
-                outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                outputs = model(batch_x, batch_x_mark, None, batch_y_mark)
             # outputs, batch_y = accelerator.gather_for_metrics((outputs, batch_y))
 
             outputs = outputs[:, -args.pred_len:, :]
@@ -294,6 +294,8 @@ def vali_evaluation(args, device, model, vali_data, vali_loader, criterion, mae_
     data_x = np.concatenate(data_x, axis=0)
     data_y = np.concatenate(data_y, axis=0)
     pred_y = np.concatenate(pred_y, axis=0)
+    print ('data_y',data_y.shape)
+    print ('pred_y',pred_y.shape)
     r2 = r2_score(data_y.reshape(-1,1),pred_y.reshape(-1,1))
     
     total_loss = np.average(total_loss)
