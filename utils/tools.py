@@ -250,7 +250,7 @@ def vali_evaluation(args, device, model, vali_data, vali_loader, criterion, mae_
             batch_y = batch[1].float().to(device)
             batch_x_mark = batch[2].float().to(device)
             batch_y_mark = batch[3].float().to(device)
-            net_id = batch[4].float().to(device)
+            net_id = batch[4]#.float().to(device)
             if args.other_id == 1:
                 other_id = batch[5].float().to(device)
             else:
@@ -264,7 +264,7 @@ def vali_evaluation(args, device, model, vali_data, vali_loader, criterion, mae_
                 device)
             # encoder - decoder
 
-            batch_x_mark = None
+            #batch_x_mark = None
             batch_y_mark = None
             if args.use_amp:
                 with torch.cuda.amp.autocast():
