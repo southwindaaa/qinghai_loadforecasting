@@ -7,7 +7,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 # from models import Autoformer, DLinear, TimeLLM,FEDformer, TSMixer, PatchTST, iTransformer, LSTM
-from models import DLinearGeneration
+from models import DLinear
 
 from data_provider.data_factory import data_provider
 import time
@@ -59,7 +59,7 @@ parser.add_argument('--pred_len', type=int, default=12, help='prediction sequenc
 parser.add_argument('--scale', type=int, default=1, help='whether to scale data')
 
 # model define
-parser.add_argument('--enc_in', type=int, default=1, help='encoder input size')
+parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
 parser.add_argument('--dec_in', type=int, default=1, help='decoder input size')
 parser.add_argument('--c_out', type=int, default=1, help='output size')
 parser.add_argument('--d_model', type=int, default=16, help='dimension of model')
@@ -121,7 +121,7 @@ for ii in range(args.itr):
     device = torch.device('cuda:6')
     
     if args.model == 'DLinear':
-        model = DLinearGeneration.Model(args).float().to(device)
+        model = DLinear.Model(args).float().to(device)
     # elif args.model == 'Autoformer':
     #     model = Autoformer.Model(args).float()
     # elif args.model == 'PatchTST':
@@ -226,19 +226,19 @@ for ii in range(args.itr):
                 # exit()
                 
                 # decoder input
-                dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
-                    device)
-                # print ('dec_inp',dec_inp)
-                dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
-                    device)
+                # dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
+                #     device)
+                # print ('dec_inp',dec_inp.shape)
+                # dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
+                #     device)
                 
                 if args.use_amp:
                     with torch.cuda.amp.autocast():
-                        outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                        outputs = model(batch_x, batch_x_mark, None, batch_y_mark)
                         loss = criterion(outputs, batch_y)
                         train_loss.append(loss.item())
                 else:
-                    outputs = model(batch_x, batch_x_mark, dec_inp, None)
+                    outputs = model(batch_x, None, None, None)
                     #f_dim = -1 if args.features == 'MS' else 0
                     #outputs = outputs[:, -args.pred_len:, f_dim:]
                     #batch_y = batch_y[:, -args.pred_len:, f_dim:]

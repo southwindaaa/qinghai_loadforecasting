@@ -273,7 +273,7 @@ class QinghaiGenerationData(Dataset):
         logging.info(f'开始标准化')
         if scale:
             scaler_dict = {}
-            for i in self.use_cols+[power_col]:
+            for i in self.use_cols:
                 scaler = StandardScaler()
                 scaler.fit(data[i].values.reshape(-1, 1))
                 data[i] = scaler.transform(data[i].values.reshape(-1, 1))
@@ -301,14 +301,21 @@ class QinghaiGenerationData(Dataset):
         """
         将每个场站的数据单独做成一个数据。
         """
+        power_scaler = {}
+        
         data = []
         for name, group in df.groupby(['场站名称']):
             group_data = group.drop(columns=['场站名称'])  # 删除不需要的列
             group_data = group_data.set_index('time')
-
+            power_scaler[name] = StandardScaler()
+            print (group_data[self.label_col].values.shape)
+            
+            power_scaler[name].fit(group_data[self.label_col].values.reshape(-1, 1))
             data.append((name[0], 
                          group_data[self.use_cols].values, 
-                         group_data[self.label_col].values))
+                         power_scaler[name].transform(group_data[self.label_col].values.reshape(-1, 1)).reshape(-1,)))
+        self.power_scaler = power_scaler
+        joblib.dump(self.power_scaler, f'power_scaler.pkl')
         return data
 
     def __len__(self):
@@ -318,20 +325,21 @@ class QinghaiGenerationData(Dataset):
     def __getitem__(self, idx):
         name, weather_data, label_data = self.data[idx % len(self.data)]
         # 随机选择一个起始点
-        max_start_idx = len(weather_data) - self.seq_len - self.pred_len
+        max_start_idx = len(weather_data) - self.pred_len
         start_idx = random.randint(0, max_start_idx)
         # 输入序列
         
-        x1 = label_data[start_idx : start_idx + self.seq_len]
-        x2 = weather_data[start_idx : start_idx + self.seq_len + self.pred_len]
+        x2 = weather_data[start_idx : start_idx + self.pred_len]
         # 预测序列
-        y = label_data[start_idx + self.seq_len : start_idx + self.seq_len + self.pred_len]
+        y = label_data[start_idx: start_idx + self.pred_len]
         # 转换为 tensor
-        historical_tensor = torch.tensor(x1, dtype=torch.float32).unsqueeze(1)
         weather_tensor = torch.tensor(x2, dtype=torch.float32)
         y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
-        return historical_tensor, y_tensor, weather_tensor, y_tensor, name
+        return weather_tensor, y_tensor, weather_tensor, y_tensor, name
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+    
+    def inverse_transform_power(self, data,name):
+        return self.power_scaler[name].inverse_transform(data)
 
