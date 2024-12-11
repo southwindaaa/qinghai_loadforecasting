@@ -266,8 +266,11 @@ class QinghaiGenerationData(Dataset):
         
         
         logging.info(f'数据读取完成，数据维度为{data.shape}')
-        
-        self.use_cols = ['prs','t','difssi','ssi','ws','dirssi','rhu']
+        #self.use_cols = ['prs','t','difssi','ssi','ws','dirssi','rhu']
+        if args.generation_type == 'solar_power':
+            self.use_cols = ['ssi']
+        else:
+            self.use_cols = ['ws']  
         self.label_col = power_col
         
         logging.info(f'开始标准化')
