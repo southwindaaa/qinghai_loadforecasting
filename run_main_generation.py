@@ -53,9 +53,9 @@ parser.add_argument('--freq', type=str, default='h',
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
 # forecasting task
-parser.add_argument('--seq_len', type=int, default=12, help='input sequence length')
-parser.add_argument('--label_len', type=int, default=12, help='start token length')
-parser.add_argument('--pred_len', type=int, default=12, help='prediction sequence length')
+parser.add_argument('--seq_len', type=int, default=24, help='input sequence length')
+parser.add_argument('--label_len', type=int, default=24, help='start token length')
+parser.add_argument('--pred_len', type=int, default=24, help='prediction sequence length')
 parser.add_argument('--scale', type=int, default=1, help='whether to scale data')
 
 # model define
