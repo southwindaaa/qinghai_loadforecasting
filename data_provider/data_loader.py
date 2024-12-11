@@ -286,10 +286,10 @@ class QinghaiGenerationData(Dataset):
         logging.info(f'标准化完成')
 
         # 训练集测试集划分
-        split_date = data['time'].min() + (data['time'].max() - data['time'].min()) * 0.8
-        logging.info(f"{'训练集' if self.isTrain else '测试集'}划分时间点为：{split_date}")
-        data = data[data['time'] <= split_date] if self.isTrain else data[data['time'] > split_date]
-        logging.info(f"{'训练集' if self.isTrain else '测试集'}划分完成，数据维度为{data.shape}")
+        # split_date = data['time'].min() + (data['time'].max() - data['time'].min()) * 0.8
+        # logging.info(f"{'训练集' if self.isTrain else '测试集'}划分时间点为：{split_date}")
+        # data = data[data['time'] <= split_date] if self.isTrain else data[data['time'] > split_date]
+        # logging.info(f"{'训练集' if self.isTrain else '测试集'}划分完成，数据维度为{data.shape}")
 
         
         logging.info('数据初始化完成，概要信息为：')
@@ -323,7 +323,7 @@ class QinghaiGenerationData(Dataset):
 
     def __len__(self):
         # 返回所有场站的总数量 * 1000
-        return len(self.data) * 1000
+        return len(self.data) * 10000
 
     def __getitem__(self, idx):
         name, weather_data, label_data = self.data[idx % len(self.data)]

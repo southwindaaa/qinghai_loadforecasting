@@ -10,6 +10,7 @@ def draw_comparision(data_path,ii):
         data = pickle.load(file)
     print(data['data_x'].shape,data['data_y'].shape,data['pred_y'].shape)
     
+    input_sample = data['data_x'][-1]
     true_sample = data['data_y'][-1]
     pred_sample = data['pred_y'][-1]
     # print(true_sample)
@@ -22,6 +23,7 @@ def draw_comparision(data_path,ii):
 
 
     # 绘制 preds 和 trues 的曲线
+    plt.plot(input_sample, label='inputs', alpha=0.7)
     plt.plot(pred_sample, label='Predictions', alpha=0.7)
     plt.plot(true_sample, label='True Values', alpha=0.7)
     # print('Predictions vs True Values feature: '+ str(feat_ids[random_index,0]))
