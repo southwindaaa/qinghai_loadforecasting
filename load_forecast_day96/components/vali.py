@@ -25,7 +25,7 @@ def validating(args, epoch, vali_loader, device, model, criterion, mae_metric, s
                 # decoder input
                 dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float().to(
                     device)
-                dec_inp = torch.cat([batch_x[:, :args.pred_len, :], dec_inp], dim=1).float().to(
+                dec_inp = torch.cat([batch_x[:, :args.pred_len, -1:], dec_inp], dim=1).float().to(
                     device)
 
                 batch_x_mark = None

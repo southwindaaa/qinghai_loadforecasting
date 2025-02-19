@@ -74,11 +74,9 @@ class dataLoader(Dataset):
         self.logging.info(f"{'训练集' if self.isTrain else '测试集'}划分时间点为：{split_date}")
         df = df[df['ymd'] <= split_date] if self.isTrain else df[df['ymd'] > split_date]
 
-        #net_id编码
+        # 日期缺失值处理
         self.scale_label_encoder_netid = LabelEncoder()
         self.scale_label_encoder_netid.fit(df['net_id'])
-        
-        # 日期缺失值处理
         df = df.sort_values(by=['net_id', 'ymd'])
         df = self._handle_missing_dates_no_otherid(df)
         self.logging.info('数据日期完整性检查通过')
@@ -114,20 +112,10 @@ class dataLoader(Dataset):
         处理 'ymd' 缺失的情况，将每条数据根据前后完整的数据分割成多条数据。
         """
         data = []
-        # print(df)
-        net_ids = []
         for net_id, group in df.groupby('net_id'):
             group_data = group.drop(columns=['net_id'])  # 删除不需要的列
             group_data = group_data.set_index('ymd')
             data.append((net_id, group_data.values.flatten()))
-            net_ids.append(self.scale_label_encoder_netid.transform([net_id])[0])
-            
-        if self.scale:
-            net_ids=np.array(net_ids).reshape(-1, 1)
-            self.netid_scaler = StandardScaler()
-            self.netid_scaler.fit(net_ids)
-            self.net_ids = self.netid_scaler.transform(net_ids)
-            
         return data
 
     def __len__(self):
@@ -137,7 +125,6 @@ class dataLoader(Dataset):
     def __getitem__(self, idx):
         net_id, all_data = self.data[idx % len(self.data)]
         net_id = self.scale_label_encoder_netid.transform([net_id])[0]
-        encoded_net_id = self.net_ids[idx % len(self.data)]
 
         # 随机选择一个起始点
         max_start_idx = len(all_data) - self.seq_len - self.pred_len
@@ -145,14 +132,10 @@ class dataLoader(Dataset):
         start_idx = random.randint(0, max_start_idx)
         # 输入序列
         x = all_data[start_idx:start_idx + self.seq_len]
-        net_ids = np.repeat(encoded_net_id, len(x))
-        # print(x)
-        x_new = np.column_stack((net_ids,x))
-        
         # 预测序列
         y = all_data[start_idx + self.seq_len:start_idx + self.seq_len + self.pred_len]
         # 转换为 tensor
-        x_tensor = torch.tensor(x_new, dtype=torch.float32)
+        x_tensor = torch.tensor(x, dtype=torch.float32).unsqueeze(1)
         y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
         return x_tensor, y_tensor, x_tensor, y_tensor, net_id
 
