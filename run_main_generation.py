@@ -7,7 +7,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 # from models import Autoformer, DLinear, TimeLLM,FEDformer, TSMixer, PatchTST, iTransformer, LSTM
-from models import DLinear
+from models import DLinear,MLP
 
 from data_provider.data_factory import data_provider
 import time
@@ -36,7 +36,7 @@ parser.add_argument('--is_training', type=int, default=1, help='status')
 parser.add_argument('--checkpoint', type=int, default=0, help='checkpoint')
 parser.add_argument('--model_id', type=str, default='qinghai', help='model id')
 parser.add_argument('--model_comment', type=str, default='none', help='prefix when saving test results')
-parser.add_argument('--model', type=str, default='DLinear',
+parser.add_argument('--model', type=str, default='MLP',
                     help='model name, options: [Autoformer, DLinear]')
 parser.add_argument('--seed', type=int, default=2021, help='random seed')
 
@@ -53,13 +53,13 @@ parser.add_argument('--freq', type=str, default='h',
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
 # forecasting task
-parser.add_argument('--seq_len', type=int, default=12, help='input sequence length')
-parser.add_argument('--label_len', type=int, default=12, help='start token length')
-parser.add_argument('--pred_len', type=int, default=12, help='prediction sequence length')
+parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
+parser.add_argument('--label_len', type=int, default=96, help='start token length')
+parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
 parser.add_argument('--scale', type=int, default=1, help='whether to scale data')
 
 # model define
-parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
+parser.add_argument('--enc_in', type=int, default=1, help='encoder input size')
 parser.add_argument('--dec_in', type=int, default=1, help='decoder input size')
 parser.add_argument('--c_out', type=int, default=1, help='output size')
 parser.add_argument('--d_model', type=int, default=16, help='dimension of model')
@@ -122,6 +122,8 @@ for ii in range(args.itr):
     
     if args.model == 'DLinear':
         model = DLinear.Model(args).float().to(device)
+    elif args.model == 'MLP':
+        model = MLP.Model(args).float().to(device)
     # elif args.model == 'Autoformer':
     #     model = Autoformer.Model(args).float()
     # elif args.model == 'PatchTST':

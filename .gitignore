@@ -1,3 +1,6 @@
 *.pyc
 checkpoints
 __pycache__/
+cwl_check_code
+results/
+*.pkl
